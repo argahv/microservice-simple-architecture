@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/component: controller 
+    name: ingress-srv
+  name: ingress-srv
+  annotations:
+    # ingressclass.kubernetes.io/is-default-class: "true"
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+    kubernetes.io/ingress.class: 'nginx'
+spec:
+  # controller: k8s.io/ingress-nginx
+  rules:
+    - host: posts.com
+      http: 
+        paths:
+          - path: /posts/create
+            pathType: Prefix
+            backend:
+              service:
+                name: posts-clusterip-srv
+                port:
+                  number: 4000
+          - path: /posts
+            pathType: Prefix
+            backend:
+              service:
+                name: query-srv
+                port:
+                  number: 4002
+          - path: /posts/?(.*)/comments #wildcard any value can be added
+            pathType: Prefix
+            backend:
+              service:
+                name: comments-srv
+                port:
+                  number: 4001
+          - path: /?(.*) #has to be in the end based on importance
+            pathType: Prefix
+            backend:
+              service:
+                name: client-srv
+                port:
+                  number: 3000
+ 
